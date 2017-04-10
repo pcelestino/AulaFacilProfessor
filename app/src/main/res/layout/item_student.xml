@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context="br.edu.ffb.pedro.aulafacilprofessor.activities.LoginActivity">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/studentDeviceReadableName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:padding="20dp"
+            android:paddingEnd="50dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="50dp"
+            android:paddingStart="20dp"
+            android:text="Maria Golçalves da Silva meideiros"
+            android:textAlignment="textStart"
+            android:textColor="@android:color/holo_blue_dark"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/studentDeviceLeaderIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center"
+            android:minHeight="50dp"
+            android:minWidth="50dp"
+            android:src="@drawable/ic_turned_in"
+            android:contentDescription="@string/student_leader_icon_description" />
+
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>
