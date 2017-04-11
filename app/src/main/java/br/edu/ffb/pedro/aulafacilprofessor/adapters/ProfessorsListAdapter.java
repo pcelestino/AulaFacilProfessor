@@ -13,9 +13,6 @@ import java.util.ArrayList;
 import br.edu.ffb.pedro.aulafacilprofessor.R;
 import br.edu.ffb.pedro.aulafacilprofessor.adapters.holders.StudentsListViewHolder;
 
-/**
- * Created by Pedro on 03/04/2017.
- */
 public class ProfessorsListAdapter extends RecyclerView.Adapter {
 
     private ArrayList<EasyP2pDevice> studentDevices;
@@ -37,6 +34,12 @@ public class ProfessorsListAdapter extends RecyclerView.Adapter {
         StudentsListViewHolder studentsListViewHolder = (StudentsListViewHolder) holder;
         EasyP2pDevice easyP2pDevice = studentDevices.get(position);
         studentsListViewHolder.studentDeviceReadableName.setText(easyP2pDevice.readableName);
+
+        if (easyP2pDevice.isLeader) {
+            studentsListViewHolder.studentDeviceLeaderIcon.setImageResource(R.drawable.ic_turned_in);
+        } else {
+            studentsListViewHolder.studentDeviceLeaderIcon.setImageResource(R.drawable.ic_turned_in_not);
+        }
     }
 
     @Override

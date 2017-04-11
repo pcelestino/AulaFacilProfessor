@@ -1,5 +1,6 @@
 package br.edu.ffb.pedro.aulafacilprofessor.activities;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -51,6 +52,7 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
         showProfessorInputNameDialog();
     }
 
+    @SuppressLint("InflateParams")
     private void showProfessorInputNameDialog() {
         LayoutInflater layoutInflaterAndroid = LayoutInflater.from(LoginActivity.this);
         View mView = layoutInflaterAndroid.inflate(R.layout.professor_input_name_dialog_box, null);
@@ -170,6 +172,13 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
                             Log.d(TAG, "O Dispositivo " + bullyElection.device.readableName + " retornou OK");
                             break;
                         case BullyElection.INFORM_LEADER:
+                            EasyP2pDevice leader = bullyElection.device;
+                            network.updateLeaderReference(leader, new EasyP2pCallback() {
+                                @Override
+                                public void call() {
+                                    professorsListAdapter.notifyDataSetChanged();
+                                }
+                            });
                             break;
                     }
                     break;
