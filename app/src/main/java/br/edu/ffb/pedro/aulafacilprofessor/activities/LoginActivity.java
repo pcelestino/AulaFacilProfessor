@@ -26,6 +26,7 @@ import com.ffb.pedrosilveira.easyp2p.callbacks.EasyP2pDataCallback;
 import com.ffb.pedrosilveira.easyp2p.callbacks.EasyP2pDeviceCallback;
 import com.ffb.pedrosilveira.easyp2p.payloads.Payload;
 import com.ffb.pedrosilveira.easyp2p.payloads.bully.BullyElection;
+import com.ffb.pedrosilveira.easyp2p.payloads.device.DeviceInfo;
 
 import java.io.IOException;
 
@@ -146,49 +147,6 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
     }
 
     @Override
-    public void onDataReceived(Object data) {
-        Log.d(TAG, "Received network data.");
-
-        try {
-            Payload payload = LoganSquare.parse((String) data, Payload.class);
-
-            switch (payload.type) {
-
-                // QUIZ
-                case Quiz.TYPE:
-                    final Quiz newQuiz;
-
-                    newQuiz = LoganSquare.parse((String) data, Quiz.class);
-
-                    Log.d(TAG, "MENSAGEM GERAL: " + String.valueOf(newQuiz.isLeader));  //See you on the other side!
-                    break;
-
-                // BULLY ELECTION
-                case BullyElection.TYPE:
-                    BullyElection bullyElection = LoganSquare.parse((String) data, BullyElection.class);
-
-                    switch (bullyElection.message) {
-                        case BullyElection.RESPOND_OK:
-                            Log.d(TAG, "O Dispositivo " + bullyElection.device.readableName + " retornou OK");
-                            break;
-                        case BullyElection.INFORM_LEADER:
-                            EasyP2pDevice leader = bullyElection.device;
-                            network.updateLeaderReference(leader, new EasyP2pCallback() {
-                                @Override
-                                public void call() {
-                                    professorsListAdapter.notifyDataSetChanged();
-                                }
-                            });
-                            break;
-                    }
-                    break;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_login, menu);
         return true;
@@ -231,6 +189,57 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onDataReceived(Object data) {
+        Log.d(TAG, "Received network data.");
+
+        try {
+            Payload payload = LoganSquare.parse((String) data, Payload.class);
+
+            switch (payload.type) {
+
+                // O Líder irá enviar mensagens do tipo QUIZ
+                case Quiz.TYPE:
+                    final Quiz newQuiz;
+                    newQuiz = LoganSquare.parse((String) data, Quiz.class);
+
+                    Log.d(TAG, "MENSAGEM GERAL: " + String.valueOf(newQuiz.isLeader));  //See you on the other side!
+                    break;
+
+                // BULLY ELECTION
+                case BullyElection.TYPE:
+                    BullyElection bullyElection = LoganSquare.parse((String) data, BullyElection.class);
+
+                    switch (bullyElection.message) {
+                        case BullyElection.RESPOND_OK:
+                            Log.d(TAG, "O Dispositivo " + bullyElection.device.readableName + " retornou OK");
+                            break;
+                        case BullyElection.INFORM_LEADER:
+                            final EasyP2pDevice leader = bullyElection.device;
+                            network.updateLeaderReference(leader, new EasyP2pCallback() {
+                                @Override
+                                public void call() {
+                                    network.registeredLeader = leader;
+                                    professorsListAdapter.notifyDataSetChanged();
+                                }
+                            });
+                            break;
+                    }
+                    break;
+
+                case DeviceInfo.TYPE:
+                    DeviceInfo deviceInfo = LoganSquare.parse((String) data, DeviceInfo.class);
+
+                    switch (deviceInfo.message) {
+                        case DeviceInfo.REMOVE_DEVICE:
+                            network.removeDeviceReference(deviceInfo.device, null);
+                    }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
