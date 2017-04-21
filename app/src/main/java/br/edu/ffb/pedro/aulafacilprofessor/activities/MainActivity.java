@@ -3,20 +3,25 @@ package br.edu.ffb.pedro.aulafacilprofessor.activities;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bluelinelabs.logansquare.LoganSquare;
@@ -31,26 +36,27 @@ import com.ffb.pedrosilveira.easyp2p.payloads.Payload;
 import com.ffb.pedrosilveira.easyp2p.payloads.bully.BullyElection;
 import com.ffb.pedrosilveira.easyp2p.payloads.device.DeviceInfo;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 
 import br.edu.ffb.pedro.aulafacilprofessor.R;
-import br.edu.ffb.pedro.aulafacilprofessor.adapters.StudentsListAdapter;
+import br.edu.ffb.pedro.aulafacilprofessor.events.MessageEvent;
+import br.edu.ffb.pedro.aulafacilprofessor.fragments.StudentsFragment;
 import br.edu.ffb.pedro.aulafacilprofessor.payload.Quiz;
 
-public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallback {
+public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener, EasyP2pDataCallback {
 
     protected static final String TAG = "AulaFacilProfessor";
+    private LinearLayout contentMain;
     private Toolbar toolbar;
-    private LinearLayout studentsContainer;
     private String professorInputName = "";
+    private TextView drawerTitle;
 
+    public EasyP2p network;
     private EasyP2pDataReceiver easyP2pDataReceiver;
     private EasyP2pServiceData easyP2pServiceData;
-    private EasyP2p network;
-
-    private RecyclerView studentsList;
-    private View mEmptyView;
-    private StudentsListAdapter studentsListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,20 +66,37 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
     }
 
     private void setupLayout() {
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setVisibility(View.GONE);
-        studentsContainer = (LinearLayout) findViewById(R.id.studentsContainer);
-        studentsList = (RecyclerView) findViewById(R.id.studentsList);
-        mEmptyView = findViewById(R.id.emptyView);
+        contentMain = (LinearLayout) findViewById(R.id.content_main);
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setCheckedItem(R.id.nav_students_list);
+        navigationView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                                       int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                navigationView.removeOnLayoutChangeListener(this);
+                drawerTitle = (TextView) navigationView.findViewById(R.id.drawerTitle);
+            }
+        });
     }
 
     @SuppressLint("InflateParams")
     private void showProfessorInputNameDialog() {
-        LayoutInflater layoutInflaterAndroid = LayoutInflater.from(LoginActivity.this);
+        LayoutInflater layoutInflaterAndroid = LayoutInflater.from(MainActivity.this);
         View mView = layoutInflaterAndroid.inflate(R.layout.professor_input_name_dialog_box, null);
-        AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(LoginActivity.this);
+        AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(MainActivity.this);
         alertDialogBuilderUserInput.setView(mView);
 
         final EditText studentInputNameDialogEditText = (EditText) mView.findViewById(R.id.userInputDialog);
@@ -96,11 +119,13 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
 
                         professorInputName = studentInputNameDialogEditText.getText().toString();
                         if (professorInputName.isEmpty()) {
-                            Toast.makeText(LoginActivity.this, R.string.please_insert_your_name,
+                            Toast.makeText(MainActivity.this, R.string.please_insert_your_name,
                                     Toast.LENGTH_SHORT).show();
                         } else {
                             toolbar.setVisibility(View.VISIBLE);
-                            studentsContainer.setBackgroundColor(ContextCompat.getColor(LoginActivity.this, R.color.transparent));
+                            drawerTitle.setText(professorInputName);
+                            displaySelectedScreen(R.id.nav_students_list);
+                            contentMain.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.transparent));
                             setupEasyP2P(professorInputName);
                             alertDialogAndroid.dismiss();
                         }
@@ -114,7 +139,7 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
 
     private void setupEasyP2P(String professorInputName) {
 
-        easyP2pDataReceiver = new EasyP2pDataReceiver(LoginActivity.this, LoginActivity.this);
+        easyP2pDataReceiver = new EasyP2pDataReceiver(MainActivity.this, MainActivity.this);
         easyP2pServiceData = new EasyP2pServiceData("AulaFacilProfessor", 50489, professorInputName);
 
         network = new EasyP2p(easyP2pDataReceiver, easyP2pServiceData, new EasyP2pCallback() {
@@ -134,7 +159,8 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
                                 "\nSERVICE NAME: " + device.serviceName +
                                 "\nDEVICE NAME: " + device.deviceName);
 
-                        studentsListAdapter.notifyDataSetChanged();
+                        EventBus.getDefault().post(new MessageEvent(MessageEvent.UPDATE_STUDENTS_LIST));
+                        //studentsListAdapter.notifyDataSetChanged();
                     }
                 },
                 new EasyP2pDeviceCallback() {
@@ -146,53 +172,58 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
                                 "\nSERVICE NAME: " + device.serviceName +
                                 "\nDEVICE NAME: " + device.deviceName);
 
-                        studentsListAdapter.notifyDataSetChanged();
+                        EventBus.getDefault().post(new MessageEvent(MessageEvent.UPDATE_STUDENTS_LIST));
+                        //studentsListAdapter.notifyDataSetChanged();
                     }
                 });
 
-        setupProfessorsList();
+        //setupProfessorsList();
     }
 
-    private void checkAdapterIsEmpty () {
-        if (studentsListAdapter.getItemCount() == 0) {
-            mEmptyView.setVisibility(View.VISIBLE);
-            studentsList.setVisibility(View.GONE);
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
         } else {
-            mEmptyView.setVisibility(View.GONE);
-            studentsList.setVisibility(View.VISIBLE);
+            super.onBackPressed();
         }
     }
 
-    private void setupProfessorsList() {
-        studentsListAdapter = new StudentsListAdapter(network.registeredClients, LoginActivity.this);
+    private void displaySelectedScreen(int id) {
 
-        studentsListAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onChanged() {
-                super.onChanged();
-                checkAdapterIsEmpty();
-            }
-        });
+        Fragment fragment = null;
 
-        LinearLayoutManager studentsListLayoutManager = new LinearLayoutManager(LoginActivity.this,
-                LinearLayoutManager.VERTICAL, false);
-
-        studentsList.setLayoutManager(studentsListLayoutManager);
-        studentsList.setHasFixedSize(true);
-        studentsList.setAdapter(studentsListAdapter);
-        checkAdapterIsEmpty();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_login, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_send:
+        switch (id) {
+            case R.id.nav_students_list:
+                fragment = new StudentsFragment();
+                break;
+            case R.id.nav_statistics:
+                break;
+            case R.id.nav_manage_quiz:
+                break;
+            case R.id.nav_tools:
+                break;
+            case R.id.nav_logout:
+                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Deseja realmente sair?")
+                        .setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                network.stopNetworkService(false, new EasyP2pCallback() {
+                                    @Override
+                                    public void call() {
+                                        finish();
+                                    }
+                                });
+                            }
+                        })
+                        .setNegativeButton("Não", null)
+                        .create();
+                alertDialog.show();
+                break;
+            case R.id.nav_share:
+                break;
+            case R.id.nav_send:
                 network.startElection(
                         new EasyP2pDeviceCallback() {
                             @Override
@@ -207,25 +238,24 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
                         }
                 );
                 break;
-            case R.id.menu_logout:
-                AlertDialog alerta = new AlertDialog.Builder(LoginActivity.this)
-                        .setTitle("Deseja realmente sair?")
-                        .setPositiveButton("Sim", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface arg0, int arg1) {
-                                network.stopNetworkService(false, new EasyP2pCallback() {
-                                    @Override
-                                    public void call() {
-                                        finish();
-                                    }
-                                });
-                            }
-                        })
-                        .setNegativeButton("Não", null)
-                        .create();
-                alerta.show();
-                break;
         }
-        return super.onOptionsItemSelected(item);
+
+        if (fragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(contentMain.getId(), fragment)
+                    .commit();
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        displaySelectedScreen(item.getItemId());
+        return true;
     }
 
     @Override
@@ -259,7 +289,8 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
                                 @Override
                                 public void call() {
                                     network.registeredLeader = leader;
-                                    studentsListAdapter.notifyDataSetChanged();
+                                    EventBus.getDefault().post(new MessageEvent(MessageEvent.UPDATE_STUDENTS_LIST));
+                                    //studentsListAdapter.notifyDataSetChanged();
                                 }
                             });
                             break;

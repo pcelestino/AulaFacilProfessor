@@ -13,12 +13,12 @@ import java.util.ArrayList;
 import br.edu.ffb.pedro.aulafacilprofessor.R;
 import br.edu.ffb.pedro.aulafacilprofessor.adapters.holders.StudentsListViewHolder;
 
-public class ProfessorsListAdapter extends RecyclerView.Adapter {
+public class StudentsListAdapter extends RecyclerView.Adapter {
 
     private ArrayList<EasyP2pDevice> studentDevices;
     private Context context;
 
-    public ProfessorsListAdapter(ArrayList<EasyP2pDevice> studentDevices, Context context) {
+    public StudentsListAdapter(ArrayList<EasyP2pDevice> studentDevices, Context context) {
         this.studentDevices = studentDevices;
         this.context = context;
     }

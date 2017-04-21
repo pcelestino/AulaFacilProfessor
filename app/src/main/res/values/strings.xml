@@ -7,4 +7,20 @@
     <string name="title_activity_login">Lista de alunos</string>
     <string name="student_leader_icon_description">Indica se o aluno é o lider ou não</string>
     <string name="logout">Sair</string>
+    <string name="waiting_for_students">Aguardando Alunos</string>
+    <string name="splash_image_description">Imagem do professor</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="comunicate">Comunicação</string>
+    <string name="share">Compartilhar</string>
+    <string name="send_quiz">Enviar Questões</string>
+    <string name="students_list">Lista de alunos</string>
+    <string name="tools">Configurações</string>
+    <string name="statistics">Estatísticas</string>
+    <string name="manage_quiz">Gerenciar questões</string>
+    <string name="professors_image">Imagem do professor</string>
 </resources>
