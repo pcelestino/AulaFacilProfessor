@@ -8,13 +8,14 @@
     android:background="@color/primary"
     android:orientation="vertical"
     tools:context="br.edu.ffb.pedro.aulafacilprofessor.activities.LoginActivity">
+
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:minHeight="?attr/actionBarSize"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:titleTextColor="@android:color/white"
-        android:background="?attr/colorPrimary"/>
+        android:background="?attr/colorPrimary" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/studentsList"

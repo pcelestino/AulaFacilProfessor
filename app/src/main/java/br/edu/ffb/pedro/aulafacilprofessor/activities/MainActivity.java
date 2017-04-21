@@ -4,20 +4,19 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -55,8 +54,6 @@ public class MainActivity extends AppCompatActivity
     private TextView drawerTitle;
 
     public EasyP2p network;
-    private EasyP2pDataReceiver easyP2pDataReceiver;
-    private EasyP2pServiceData easyP2pServiceData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,7 +123,7 @@ public class MainActivity extends AppCompatActivity
                             drawerTitle.setText(professorInputName);
                             displaySelectedScreen(R.id.nav_students_list);
                             contentMain.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.transparent));
-                            setupEasyP2P(professorInputName);
+                            setupEasyP2P();
                             alertDialogAndroid.dismiss();
                         }
                     }
@@ -137,10 +134,10 @@ public class MainActivity extends AppCompatActivity
         alertDialogAndroid.show();
     }
 
-    private void setupEasyP2P(String professorInputName) {
+    private void setupEasyP2P() {
 
-        easyP2pDataReceiver = new EasyP2pDataReceiver(MainActivity.this, MainActivity.this);
-        easyP2pServiceData = new EasyP2pServiceData("AulaFacilProfessor", 50489, professorInputName);
+        EasyP2pDataReceiver easyP2pDataReceiver = new EasyP2pDataReceiver(MainActivity.this, MainActivity.this);
+        EasyP2pServiceData easyP2pServiceData = new EasyP2pServiceData("AulaFacilProfessor", 50489, professorInputName);
 
         network = new EasyP2p(easyP2pDataReceiver, easyP2pServiceData, new EasyP2pCallback() {
             @Override
@@ -160,7 +157,6 @@ public class MainActivity extends AppCompatActivity
                                 "\nDEVICE NAME: " + device.deviceName);
 
                         EventBus.getDefault().post(new MessageEvent(MessageEvent.UPDATE_STUDENTS_LIST));
-                        //studentsListAdapter.notifyDataSetChanged();
                     }
                 },
                 new EasyP2pDeviceCallback() {
@@ -173,11 +169,8 @@ public class MainActivity extends AppCompatActivity
                                 "\nDEVICE NAME: " + device.deviceName);
 
                         EventBus.getDefault().post(new MessageEvent(MessageEvent.UPDATE_STUDENTS_LIST));
-                        //studentsListAdapter.notifyDataSetChanged();
                     }
                 });
-
-        //setupProfessorsList();
     }
 
     @Override
@@ -290,7 +283,6 @@ public class MainActivity extends AppCompatActivity
                                 public void call() {
                                     network.registeredLeader = leader;
                                     EventBus.getDefault().post(new MessageEvent(MessageEvent.UPDATE_STUDENTS_LIST));
-                                    //studentsListAdapter.notifyDataSetChanged();
                                 }
                             });
                             break;

@@ -42,7 +42,7 @@ public class StudentsFragment extends Fragment {
         return view;
     }
 
-    private void checkAdapterIsEmpty () {
+    private void checkAdapterIsEmpty() {
         if (studentsListAdapter.getItemCount() == 0) {
             mEmptyView.setVisibility(View.VISIBLE);
             studentsList.setVisibility(View.GONE);

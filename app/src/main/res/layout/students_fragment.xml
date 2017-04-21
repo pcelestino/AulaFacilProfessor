@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="br.edu.ffb.pedro.aulafacilprofessor.activities.MainActivity">
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/studentsList"
         android:layout_width="match_parent"

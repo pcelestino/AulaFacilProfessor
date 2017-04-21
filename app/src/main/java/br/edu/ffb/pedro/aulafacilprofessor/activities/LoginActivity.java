@@ -153,7 +153,7 @@ public class LoginActivity extends AppCompatActivity implements EasyP2pDataCallb
         setupProfessorsList();
     }
 
-    private void checkAdapterIsEmpty () {
+    private void checkAdapterIsEmpty() {
         if (studentsListAdapter.getItemCount() == 0) {
             mEmptyView.setVisibility(View.VISIBLE);
             studentsList.setVisibility(View.GONE);
